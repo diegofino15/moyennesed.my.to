@@ -2,4 +2,4 @@
 
 This is the repository for the website : https://moyennesed.my.to/
 
-This websites calculates your actual average, which is not shown on some school's websites.
+This site calculates your average, which is not displayed for some schools on their official site
