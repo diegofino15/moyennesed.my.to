@@ -315,6 +315,11 @@ function App() {
         <button type="submit" onClick={() => setIsRedirecting(true)}>{isRedirecting ? "Redirection..." : "Site officiel ED"}</button>
         <p>DF</p>
       </form>
+      <form action="https://github.com/diegofino15/moyennesed.my.to" className="box">
+        <h1>GitHub</h1>
+        <p>Vous pouvez voir le code source de ce site sur GitHub.</p>
+        <button type="submit" onClick={() => setIsRedirecting(true)}>{isRedirecting ? "Redirection..." : "Voir code"}</button>
+      </form>
     </div>
   )
 }
