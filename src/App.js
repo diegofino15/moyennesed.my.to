@@ -24,15 +24,18 @@ function App() {
   const [isThereGrades, setIsThereGrades] = useState(false);
   const [realGrades, setRealGrades] = useState({});
 
-
   // Helper functions to get the username and password from inputs
   const handleUsernameChange = event => { setUsername(event.target.value); }
   const handlePasswordChange = event => { setPassword(event.target.value); }
 
   // Function to quickly get the calculated average
-  const getAverage = ({ codeMatiere, codePeriode }) => {
-    if (codePeriode in realGrades[codeMatiere]) {
-      return realGrades[codeMatiere][codePeriode].moyenne;
+  const getAverage = ({ subjectCode, periodCode, classAverage }) => {
+    if (periodCode in realGrades[subjectCode]) {
+      if (!classAverage) {
+        return realGrades[subjectCode][periodCode].average;
+      } else {
+        return realGrades[subjectCode][periodCode].averageClass;
+      }
     } else {
       return -1;
     }
@@ -114,87 +117,126 @@ function App() {
 
     // Initializing the temporary dictionnary to put the grades into
     var grades = {
-      "GENERALE": {}
+      "GENERAL": {}
     };
     
     // Addition of the grades
-    for (var note of data.notes) {
+    for (var grade of data.notes) {
+      var subjectCode = grade.codeMatiere;
+      var periodCode = grade.codePeriode;
+      
       // Create the suject's object in the grades dictionnary
-      if (!(note.codeMatiere in grades)) {
-        grades[note.codeMatiere] = {};
+      if (!(subjectCode in grades)) {
+        grades[subjectCode] = {};
       }
 
       // Create the subject's object in the right period in the grades dictionnary
-      if (!(note.codePeriode in grades[note.codeMatiere])) {
-        grades[note.codeMatiere][note.codePeriode] = {
+      if (!(periodCode in grades[subjectCode])) {
+        grades[subjectCode][periodCode] = {
           "total": 0.0,
           "coef": 0.0,
-          "moyenne": 0.0
+          "average": 0.0,
+
+          "totalClass": 0.0,
+          "coefClass": 0.0,
+          "averageClass": 0.0
         }
-        grades[note.codeMatiere].completeName = note.libelleMatiere;
+        grades[subjectCode].completeName = grade.libelleMatiere;
       }
 
       // Get the grade and coefficient
-      var valeur = parseFloat(note.valeur.replace(",", "."));
-      var valeurSur = parseFloat(note.noteSur.replace(",", "."));
+      var value = parseFloat(grade.valeur.replace(",", "."));
+      var classValue = parseFloat(grade.moyenneClasse.replace(",", "."));
+      var valueOn = parseFloat(grade.noteSur.replace(",", "."));
+
+      
 
       // Set the coefficient to 1 if not provided and 0 if grade is not significative
-      var coef = parseFloat(note.coef);
-      if (note.nonSignificatif) { coef = 0.0; }
+      var coef = parseFloat(grade.coef);
+      if (grade.nonSignificatif) { coef = 0.0; }
       else if (coef === 0.0) { coef = 1.0; }
 
       // Check if the grade is a value and not "Abs"
-      if (!isNaN(valeur)) {
+      if (!isNaN(value)) {
         // Calculate the value of the grade / 20
-        var valeurNote = (valeur / (valeurSur / 1.0)) * 20.0;
+        var realGrade = value / valueOn * 20.0;
 
         // Add the value * coef to the correct object
-        grades[note.codeMatiere][note.codePeriode].total += valeurNote * coef;
-        grades[note.codeMatiere][note.codePeriode].coef += coef;
+        grades[subjectCode][periodCode].total += realGrade * coef;
+        grades[subjectCode][periodCode].coef += coef;
+      }
+      // Do the same for the average class grade
+      if (!isNaN(classValue)) {
+        var realClassGrade = classValue / valueOn * 20.0;
+        grades[subjectCode][periodCode].totalClass += realClassGrade * coef;
+        grades[subjectCode][periodCode].coefClass += coef;
       }
     }
 
     // Calculation of the subject's averages 
-    for (const [codeMatiere, matiere] of Object.entries(grades)) {
+    for (const [subjectCode, subject] of Object.entries(grades)) {
       // Check that the subject isn't the GENERAL average
-      if (codeMatiere !== "GENERALE") {
-        for (const [codePeriode, periode] of Object.entries(matiere)) {
-          if (codePeriode !== "completeName") {
+      if (subjectCode !== "GENERAL") {
+        for (const [periodCode, period] of Object.entries(subject)) {
+          if (periodCode !== "completeName") {
             // Calculate the average
-            var moyenne = grades[codeMatiere][codePeriode].total / grades[codeMatiere][codePeriode].coef;
+            var coef = grades[subjectCode][periodCode].coef;
+            var average;
+            if (coef === 0.0) { average = 0.0; }
+            else { average = grades[subjectCode][periodCode].total / coef; }
             // Rounding it to 2 decimals
-            moyenne = Math.round(moyenne * 100) / 100.0;
-            grades[codeMatiere][codePeriode].moyenne = moyenne;
+            average = Math.round(average * 100) / 100.0;
+            grades[subjectCode][periodCode].average = average;
+
+            // Do the same for average class grade
+            var classCoef = grades[subjectCode][periodCode].coefClass;
+            var classAverage;
+            if (classCoef === 0.0) { classAverage = 0.0; }
+            else { classAverage = grades[subjectCode][periodCode].totalClass / classCoef; }
+            classAverage = Math.round(classAverage * 100) / 100.0;
+            grades[subjectCode][periodCode].averageClass = classAverage;
             
             // Add the period to the GENERAL average if not already there
-            if (!(codePeriode in grades.GENERALE)) {
-              grades.GENERALE[codePeriode] = {
+            if (!(periodCode in grades.GENERAL)) {
+              grades.GENERAL[periodCode] = {
                 "total": 0.0,
                 "coef": 0.0,
-                "moyenne": 0.0
+                "average": 0.0,
+
+                "totalClass": 0.0,
+                "coefClass": 0.0,
+                "averageClass": 0.0
               };
-              grades.GENERALE.completeName = "MOYENNE GÉNÉRALE";
+              grades.GENERAL.completeName = "MOYENNE GÉNÉRALE";
             }
             
             // Add the average and coefficient
-            grades.GENERALE[codePeriode].total += moyenne;
-            grades.GENERALE[codePeriode].coef += 1.0;
+            grades.GENERAL[periodCode].total += average;
+            grades.GENERAL[periodCode].totalClass += classAverage;
+            
+            if (coef !== 0.0) { grades.GENERAL[periodCode].coef += 1.0; }
+            if (classCoef !== 0.0) { grades.GENERAL[periodCode].coefClass += 1.0; }
           }
         }
       }
     }
 
     // Calculation of the GENERAL average
-    for (const [codePeriode, periode] of Object.entries(grades.GENERALE)) {
-      if (codePeriode !== "completeName") {
+    for (const [periodCode, period] of Object.entries(grades.GENERAL)) {
+      if (periodCode !== "completeName") {
         // Calculate the average of the right period
-        var moyenne = grades.GENERALE[codePeriode].total / grades.GENERALE[codePeriode].coef;
+        var average = grades.GENERAL[periodCode].total / grades.GENERAL[periodCode].coef;
         // Rounding the average to 2 decimals
-        moyenne = Math.round(moyenne * 100) / 100.0;
-        grades.GENERALE[codePeriode].moyenne = moyenne;
+        average = Math.round(average * 100) / 100.0;
+        grades.GENERAL[periodCode].average = average;
+        
+        // Do the same for class average
+        var classAverage = grades.GENERAL[periodCode].totalClass / grades.GENERAL[periodCode].coefClass;
+        classAverage = Math.round(classAverage * 100) / 100.0;
+        grades.GENERAL[periodCode].averageClass = classAverage;
       }
     }
-
+    
     // Set the finals averages and stop the loading process
     setRealGrades(grades);
     setIsLoading(false);
@@ -210,87 +252,71 @@ function App() {
     }
   }
   
-  // Return the actual HTML code
   return (
     <div className="App">
+      <div className="box">
+        <h1>Moyennes École Directe <a className="version">v2.1</a></h1>
+        <p>Entrez votre identifiant et mot de passe ED</p>
+        <a>{loginSuccessful ? "" : "Identifiant ou mot de passe incorrect"}</a>
+        <input onChange={handleUsernameChange} type="text" placeholder="Identifiant"></input>
+        <input onChange={handlePasswordChange} type="password" placeholder="Mot de passe"></input>
+        <button onClick={submit}>{isConnecting ? "Connexion..." : isTaking ? "Récupération des notes..." : "Valider"}</button>
+      </div>
+
       {(() => {
-        return (
-            <div>
-              <div className="box">
-                <h1>Moyennes École Directe <a className="version">v2</a></h1>
-                <p>Entrez votre identifiant et mot de passe ED</p>
-                <a>{loginSuccessful ? "" : "Identifiant ou mot de passe incorrect"}</a>
-                <input onChange={handleUsernameChange} type="text" placeholder="Identifiant"></input>
-                <input onChange={handlePasswordChange} type="password" placeholder="Mot de passe"></input>
-                <button onClick={submit}>{isConnecting ? "Connexion..." : isTaking ? "Récupération des notes..." : "Valider"}</button>
-              </div>
+        // Displaying the averages if calculated
+        if (isValidated && loginSuccessful && !isLoading) {
+          if (isThereGrades) {
+            // Define the object where all the HTML code for the
+            // averages will be put
+            var averages = [];
 
-              {(() => {
-                // Displaying the averages if calculated
-                if (isValidated && loginSuccessful && !isLoading) {
-                  if (isThereGrades) {
-                    // Define the object where all the HTML code for the
-                    // averages will be put
-                    var moyennes = [];
+            // Loop through the averages to add them to the list
+            for (const [subjectCode, subject] of Object.entries(realGrades)) {
+              averages.push(
+                <div className="box">
+                  <h1>{subject.completeName}</h1>
+                  {(() => {
+                    var subjectAverages = [];
+                    // Push HTML code for every period
+                    for (let i = 1; i <= 3; i++) {
+                      var average = getAverage({ subjectCode: subjectCode, periodCode: "A00" + i });
+                      var classAverage = getAverage({subjectCode: subjectCode, periodCode: "A00" + i, classAverage: true});
+                      
+                      if (average !== -1) {
+                        if (subject["A00" + i].coef === 0.0) { average = "Vide"; }
+                        if (subject["A00" + i].coefClass === 0.0) { classAverage = "Vide"; }
 
-                    // Loop through the averages to add them to the list
-                    for (const [codeMatiere, matiere] of Object.entries(realGrades)) {
-                      moyennes.push(
-                        <div className="box">
-                          <h1>{matiere.completeName}</h1>
-                          {(() => {
-                            // First period
-                            const average = getAverage({codeMatiere: codeMatiere, codePeriode: "A001"});
-                            // Return HTML code only if an average is present
-                            if (average !== -1) {
-                              return <span><h3>{"Trimestre 1"}</h3><h3>--</h3><h3 className="note">{average}</h3></span>;
-                            }
-                          })()}
-                          {(() => {
-                            // Second period
-                            const average = getAverage({codeMatiere: codeMatiere, codePeriode: "A002"});
-
-                            if (average !== -1) {
-                              return <span><h3>{"Trimestre 2"}</h3><h3>--</h3><h3 className="note">{average}</h3></span>;
-                            }
-                          })()}
-                          {(() => {
-                            // Third period
-                            const average = getAverage({codeMatiere: codeMatiere, codePeriode: "A003"});
-
-                            if (average !== -1) {
-                              return <span><h3>{"Trimestre 3"}</h3><h3>--</h3><h3 className="note">{average}</h3></span>;
-                            }
-                          })()}
-                        </div>
-                      );
+                        subjectAverages.push(<span><h3>{"Trimestre " + i}</h3><h3>--</h3><h3 className="grade">{average}</h3><h3>--</h3><h3 className="subject">Classe: </h3><h3 className="grade">{classAverage}</h3></span>);
+                      }
                     }
-                    // Return the HTML code for the averages
-                    return moyennes;
+                    return subjectAverages;
+                  })()}
+                </div>
+              );
+            }
+            // Return the HTML code for the averages
+            return averages;
 
-                  } else {
-                    // Return this if there are no grades
-                    return (
-                      <div className="box">
-                        <h2>Pas de notes pour l'instant...</h2>
-                      </div>
-                    )
-                  }
-                }
-              })()}
-
-              <form action="https://www.ecoledirecte.com" className="box">
-                <h1>École Directe</h1>
-                <p>Ce cite calcule les moyennes de chaque matière ainsi que la moyenne générale, cette fonction n'est plus disponible sur le site officiel.</p>
-                <button type="submit" onClick={() => setIsRedirecting(true)}>{isRedirecting ? "Redirection..." : "Site officiel ED"}</button>
-                <p>DF</p>
-              </form>
-            </div>
-          )
+          } else {
+            // Return this if there are no grades
+            return (
+              <div className="box">
+                <h2>Pas de notes pour l'instant...</h2>
+              </div>
+            )
+          }
+        }
       })()}
+
+      <form action="https://www.ecoledirecte.com" className="box">
+        <h1>École Directe</h1>
+        <p>Ce site calcule les moyennes de chaque matière ainsi que la moyenne générale, cette fonction n'est plus disponible sur le site officiel.</p>
+        <button type="submit" onClick={() => setIsRedirecting(true)}>{isRedirecting ? "Redirection..." : "Site officiel ED"}</button>
+        <p>DF</p>
+      </form>
     </div>
-    
-  );
+  )
 }
 
 export default App;
