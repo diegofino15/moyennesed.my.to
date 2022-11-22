@@ -6,9 +6,20 @@ app = Flask(__name__)
 CORS(app)
 
 
-password = "1408"
-version = "1.0"
-count_file = "./count.json"
+try:
+    with open("./admin.json", "r") as file:
+        loaded_file = json.load(file)        
+        file.close
+    
+    password = loaded_file["password"]
+    version = loaded_file["version"]
+    count_file = loaded_file["count_file"]
+except FileNotFoundError:
+    password = "0000"
+    version = "1.0"
+    count_file = "./count.json"
+
+    print("Admin file has not been found")
 
 
 @app.route("/", methods=['POST'])
