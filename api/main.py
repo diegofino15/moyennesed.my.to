@@ -41,7 +41,7 @@ def reset_count():
             "connections": {}
         }
         with open(count_file, "w") as file:
-            json.dump(file_data, file)
+            json.dump(file_data, file, indent=4)
             file.close()
         
         successful = True
@@ -83,7 +83,7 @@ def add_count():
     json_infos["count"] += 1
     
     with open(count_file, "w") as file:
-        json.dump(json_infos, file)
+        json.dump(json_infos, file, indent=4)
         file.close()
     
     data = {
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     ssl_context = ('/etc/letsencrypt/live/moyennesed.my.to/fullchain.pem', '/etc/letsencrypt/live/moyennesed.my.to/privkey.pem')
     app.run(host="0.0.0.0", port=777, ssl_context=ssl_context)
 
-    print("API stopped")
+    print("\nAPI stopped")
 
 
 
