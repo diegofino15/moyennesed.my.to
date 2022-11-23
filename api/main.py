@@ -17,7 +17,7 @@ try:
 except FileNotFoundError:
     password = "0000"
     version = "1.0"
-    count_file = "./count.json"
+    count_file = "./infos.json"
 
     print("Admin file has not been found")
 
@@ -25,55 +25,73 @@ except FileNotFoundError:
 @app.route("/", methods=['POST'])
 def default():
     data = {
-        "Version": "1.0",
-        "Message": "This is the API for https://moyennesed.my.to/"
+        "version": "1.0",
+        "message": "This is the API for https://moyennesed.my.to/"
     }
-    json_data = json.dumps(data)
-    return json_data
+
+    return json.dumps(data)
 
 @app.route("/reset_count", methods=['POST'])
 def reset_count():
     query_password = str(request.args.get('password'))
     if query_password == password:
-        data = {
+        file_data = {
             "version": version,
             "count": 0,
-            "date": datetime.datetime.now().ctime()
+            "connections": {}
         }
         with open(count_file, "w") as file:
-            json.dump(data, file)
+            json.dump(file_data, file)
             file.close()
         
-        data.update({"successful": True})
+        successful = True
     else:
-        data = {
-            "version": version,
-            "successful": False
-        }
+        successful = False
+    
+    data = {
+        "version": version,
+        "successful": successful
+    }
 
     return json.dumps(data)
 
 @app.route("/get_count", methods=['POST'])
 def get_count():
     with open(count_file, "r") as file:
-        json_object = json.load(file)
+        json_infos = json.load(file)
         file.close()
     
-    return json.dumps(json_object)
+    data = {
+        "version": version,
+        "count": json_infos["count"]
+    }
+
+    return json.dumps(data)
 
 @app.route("/add_count", methods=['POST'])
 def add_count():
-    with open(count_file, "r") as file:
-        json_object = json.load(file)
-        file.close()
-    
-    json_object["count"] += 1
+    query_username = str(request.json.get("username"))
 
-    with open(count_file, "w") as file:
-        json.dump(json_object, file)
+    with open(count_file, "r") as file:
+        json_infos = json.load(file)
         file.close()
     
-    return json.dumps(json_object)
+    if (query_username in json_infos["connections"].keys()):
+        json_infos["connections"][query_username].append(datetime.datetime.now().ctime())
+    else:
+        json_infos["connections"].update({query_username: [datetime.datetime.now().ctime()]})
+    json_infos["count"] += 1
+    
+    with open(count_file, "w") as file:
+        json.dump(json_infos, file)
+        file.close()
+    
+    data = {
+        "version": version,
+        "count": json_infos["count"]
+    }
+
+    return json.dumps(data)
 
 if __name__ == '__main__':
     print("Launching API...")

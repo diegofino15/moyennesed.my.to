@@ -108,7 +108,9 @@ function App() {
 
         // Add to the count
         const apiURL = "https://moyennesed.my.to:777/add_count";
-        const apiPayload = {};
+        const apiPayload = {
+          "username": username
+        };
         const apiHeaders = {};
         axios.post(apiURL, apiPayload, { headers: apiHeaders }).then((apiResponse) => {
           // Verify that count has been updated
@@ -260,6 +262,19 @@ function App() {
 
   // Function to submit the login
   const submit = async() => {
+    // const url = "https://moyennesed.my.to:777/add_count";
+    // const payload = {
+    //   "username": username
+    // };
+    // const headers = {};
+    // fetch(url, {
+    //   headers: headers,
+    //   method: "POST",
+    // }).then((res) => {
+    //   console.log(res);
+    // });
+    // return
+    
     // Only login if not loading
     if (!isLoading) {
       // Set the current state to validated and getting the grades from EcoleDirecte's API
