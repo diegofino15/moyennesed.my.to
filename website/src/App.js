@@ -49,7 +49,7 @@ function App() {
     setIsLoading(true);
 
     // The URL to get the session token from EcoleDirecte's API
-    const loginURL = "https://api.ecoledirecte.com/v3/login.awp?v=4.17.9";
+    const loginURL = "https://api.ecoledirecte.com/v3/login.awp?v=4.24.1";
     
     // Required payload
     const loginPayload = {
@@ -83,7 +83,7 @@ function App() {
       const studentID = loginResponse.data.data.accounts[0].id;
 
       // The URL to get the grades from EcoleDirecte's API
-      const gradesURL = "https://api.ecoledirecte.com/v3/eleves/" + studentID + "/notes.awp?verbe=get&v=4.17.9";
+      const gradesURL = "https://api.ecoledirecte.com/v3/eleves/" + studentID + "/notes.awp?verbe=get&v=4.24.1";
 
       // Required payload and headers
       const gradesPayload = {
@@ -106,6 +106,9 @@ function App() {
           return 0;
         }
 
+        // If the request was successful we calculate the averages
+        calculateAverages(gradesResponse.data);
+
         // Add to the count
         const apiURL = "https://moyennesed.my.to:777/add_count";
         const apiPayload = {
@@ -120,9 +123,6 @@ function App() {
           }
           incrCountRec({ i: 0, count: count });
         });
-        
-        // If the request was successful we calculate the averages
-        calculateAverages(gradesResponse.data);
       });
     });
   }
@@ -262,19 +262,6 @@ function App() {
 
   // Function to submit the login
   const submit = async() => {
-    // const url = "https://moyennesed.my.to:777/add_count";
-    // const payload = {
-    //   "username": username
-    // };
-    // const headers = {};
-    // fetch(url, {
-    //   headers: headers,
-    //   method: "POST",
-    // }).then((res) => {
-    //   console.log(res);
-    // });
-    // return
-    
     // Only login if not loading
     if (!isLoading) {
       // Set the current state to validated and getting the grades from EcoleDirecte's API
