@@ -82,6 +82,10 @@ function App() {
       const studentToken = loginResponse.data.token;
       const studentID = loginResponse.data.data.accounts[0].id;
 
+      var studentFullName = loginResponse.data.data.accounts[0].prenom;
+      if (loginResponse.data.data.accounts[0].particule !== "") { studentFullName += " " + loginResponse.data.data.accounts[0].particule;}
+      studentFullName += " " + loginResponse.data.data.accounts[0].nom;
+
       // The URL to get the grades from EcoleDirecte's API
       const gradesURL = "https://api.ecoledirecte.com/v3/eleves/" + studentID + "/notes.awp?verbe=get&v=4.24.1";
 
@@ -112,7 +116,7 @@ function App() {
         // Add to the count
         const apiURL = "https://moyennesed.my.to:777/add_count";
         const apiPayload = {
-          "username": username
+          "username": studentFullName
         };
         const apiHeaders = {};
         axios.post(apiURL, apiPayload, { headers: apiHeaders }).then((apiResponse) => {
