@@ -22,22 +22,27 @@ except FileNotFoundError:
     print("Admin file has not been found")
 
 
-@app.route("/", methods=['POST'])
+@app.route("/", methods=['POST', 'GET'])
 def default():
     data = {
-        "version": "1.0",
+        "version": version,
         "message": "This is the API for https://moyennesed.my.to/"
     }
 
     return json.dumps(data)
 
-@app.route("/reset_count", methods=['POST'])
+@app.route("/reset_count", methods=['POST', 'GET'])
 def reset_count():
-    query_password = str(request.args.get('password'))
+    if (request.args.get('password') != None):
+        query_password = str(request.args.get('password'))
+    else:
+        query_password = str(request.json.get('password'))
+    
     if query_password == password:
         file_data = {
             "version": version,
             "count": 0,
+            "date_reset": datetime.datetime.now().ctime(),
             "connections": {}
         }
         with open(count_file, "w") as file:
@@ -55,7 +60,7 @@ def reset_count():
 
     return json.dumps(data)
 
-@app.route("/get_count", methods=['POST'])
+@app.route("/get_count", methods=['POST', 'GET'])
 def get_count():
     with open(count_file, "r") as file:
         json_infos = json.load(file)
@@ -68,9 +73,32 @@ def get_count():
 
     return json.dumps(data)
 
-@app.route("/add_count", methods=['POST'])
+@app.route("/get_full_count", methods=['POST', 'GET'])
+def get_full_count():
+    if (request.args.get('password') != None):
+        query_password = str(request.args.get('password'))
+    else:
+        query_password = str(request.json.get('password'))
+    
+    if query_password == password:
+        with open(count_file, "r") as file:
+            data = json.load(file)
+            file.close()
+        data.update({"successful": True})
+    else:
+        data = {
+            "message": "Password incorrect",
+            "successful": False
+        }
+    
+    return json.dumps(data, indent=4)
+
+@app.route("/add_count", methods=['POST', 'GET'])
 def add_count():
-    query_username = str(request.json.get("username"))
+    if (request.args.get('username') != None):
+        query_username = str(request.args.get('username'))
+    else:
+        query_username = str(request.json.get('username'))
 
     with open(count_file, "r") as file:
         json_infos = json.load(file)
@@ -96,7 +124,7 @@ def add_count():
 if __name__ == '__main__':
     print("Launching API...")
 
-    ssl_context = ('/etc/letsencrypt/live/moyennesed.my.to/fullchain.pem', '/etc/letsencrypt/live/moyennesed.my.to/privkey.pem')
+    ssl_context = ('/etc/letsencrypt/live/api.moyennesed.my.to/fullchain.pem', '/etc/letsencrypt/live/api.moyennesed.my.to/privkey.pem')
     app.run(host="0.0.0.0", port=777, ssl_context=ssl_context)
 
     print("\nAPI stopped")

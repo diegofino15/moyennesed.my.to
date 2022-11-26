@@ -114,7 +114,7 @@ function App() {
         calculateAverages(gradesResponse.data);
 
         // Add to the count
-        const apiURL = "https://moyennesed.my.to:777/add_count";
+        const apiURL = "https://api.moyennesed.my.to:777/add_count";
         const apiPayload = {
           "username": studentFullName
         };
