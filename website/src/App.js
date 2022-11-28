@@ -171,8 +171,6 @@ function App() {
       var classValue = parseFloat(grade.moyenneClasse.replace(",", "."));
       var valueOn = parseFloat(grade.noteSur.replace(",", "."));
 
-      
-
       // Set the coefficient to 1 if not provided and 0 if grade is not significative
       var coef = parseFloat(grade.coef);
       if (grade.nonSignificatif) { coef = 0.0; }
