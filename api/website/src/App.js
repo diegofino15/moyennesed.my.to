@@ -36,13 +36,19 @@ function App() {
       }
     });
   }
+
+  const submit = async() => {
+    if (!isRefreshing) {
+      getData();
+    }
+  }
   
   return (
     <div className="App">
       <div className="box">
         <h1>API Moyennes École Directe <a className="version">v2.1</a></h1>
         <input onChange={handlePasswordChange} type="password" placeholder="Password"></input>
-        <button className="input" onClick={() => getData()}>Refresh</button>
+        <button className="input" onClick={() => submit()}>Refresh</button>
       </div>
 
       {(() => {
@@ -56,23 +62,31 @@ function App() {
             </div>
           );
 
-          var keys = Object.keys(data.connections);
-          for (let i = 0; i < keys.length; i++) {
-            results.push(
-              <div className="box">
-                <h1>{keys[i]}</h1>
+          results.push(
+            <div className="box">
+              <h1>Per person count</h1>
+              <div className="persons">
                 {(() => {
                   var connections = [];
-                  for (let j = 0; j < data.connections[keys[i]].length; j++) {
+                  var keys = Object.keys(data.connections);
+
+                  for (let i = 0; i < keys.length; i++) {
+                    var key = keys[i]
+                    var obj = data.connections[key]
+
                     connections.push(
-                      <h3>{data.connections[keys[i]][j]}</h3>
+                      <span>
+                        <h3>{key}</h3>
+                        <h3 className="count"> - </h3>
+                        <h3 className="count">{obj.length}</h3>
+                      </span>
                     );
                   }
                   return connections;
                 })()}
               </div>
-            );
-          }
+            </div>
+          );
           return results;
         }
       })()}

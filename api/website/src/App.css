@@ -31,6 +31,17 @@ body, .App {
     flex-direction: column;
 }
 
+.version {
+    color: grey;
+    font-size: 28px;
+}
+
+.count {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 25px;
+    margin: 5px;
+}
+
 h1, h2 {
     color: #eb7371;
     text-align: center;
@@ -45,6 +56,19 @@ input {
     margin-bottom: 15px;
     outline: none;
     width: 80%;
+}
+
+p, h1 {
+    word-wrap: break-word;
+    max-width: 90%;
+    align-items: center;
+}
+
+span {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 
 button {
@@ -66,23 +90,4 @@ button:hover {
     background-color: white;
     color: #eb7371;
 }
-
-p, h1 {
-    word-wrap: break-word;
-    max-width: 90%;
-    align-items: center;
-}
-
-.version {
-    color: grey;
-    font-size: 28px;
-}
-
-.count {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 25px;
-    margin: 5px;
-}
-
-
 
