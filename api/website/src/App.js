@@ -70,18 +70,28 @@ function App() {
                   var connections = [];
                   var keys = Object.keys(data.connections);
 
+                  var final = {};
                   for (let i = 0; i < keys.length; i++) {
-                    var key = keys[i]
-                    var obj = data.connections[key]
+                    final[keys[i]] = data.connections[keys[i]].length;
+                  }
 
+                  var items = Object.keys(final).map(
+                    (key) => { return [key, final[key]] });
+                  items.sort(
+                    (first, second) => { return first[1] - second[1]; }
+                  );
+
+                  for (let i =( items.length - 1); i > 0; i--) {
+                    var obj = items[i];
                     connections.push(
                       <span>
-                        <h3>{key}</h3>
+                        <h3>{obj[0]}</h3>
                         <h3 className="count"> - </h3>
-                        <h3 className="count">{obj.length}</h3>
+                        <h3 className="count">{obj[1]}</h3>
                       </span>
                     );
                   }
+
                   return connections;
                 })()}
               </div>
