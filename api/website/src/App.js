@@ -81,7 +81,7 @@ function App() {
                     (first, second) => { return first[1] - second[1]; }
                   );
 
-                  for (let i =( items.length - 1); i > 0; i--) {
+                  for (let i =( items.length - 1); i >= 0; i--) {
                     var obj = items[i];
                     connections.push(
                       <span>
